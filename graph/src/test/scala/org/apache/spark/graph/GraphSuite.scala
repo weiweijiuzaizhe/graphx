@@ -30,12 +30,39 @@ class GraphSuite extends FunSuite with LocalSparkContext {
   test("mapEdges") {
     withSpark(new SparkContext("local", "test")) { sc =>
       val n = 3
-      val star = Graph(sc.parallelize((1 to n).map(x => (0: Vid, x: Vid))))
+      val rawEdges =   (1 to n).map(x => (0: Vid, x: Vid))
+
+      println {
+        rawEdges
+      }
+      //Vector((0,1), (0,2), (0,3))
+
+
+      val star = Graph(sc.parallelize(rawEdges))
+
+      //the attribute of an edge is the destination of the edge
       val starWithEdgeAttrs = star.mapEdges(e => e.dstId)
 
+
+      starWithEdgeAttrs.edges.foreach(println(_))
+
+      /*
+      the function collect has a bug ,it needs to be debug .collect() should be a function to get the distributed data
+      on different machines together
+       */
+      starWithEdgeAttrs.edges.collect().foreach(println(_))
+
       // map(_.copy()) is a workaround for https://github.com/amplab/graphx/issues/25
+      //if you need to iterate a graph,you have to use copy().
       val edges = starWithEdgeAttrs.edges.map(_.copy()).collect()
+
+    println("#######################")
+
+      edges.foreach(println(_))
+
       assert(edges.size === n)
+
+      //判断每一条边的内容和想象的是否一样
       assert(edges.toSet === (1 to n).map(x => Edge(0, x, x)).toSet)
     }
   }
@@ -46,9 +73,16 @@ class GraphSuite extends FunSuite with LocalSparkContext {
       val star = Graph(sc.parallelize((1 to n).map(x => (0: Vid, x: Vid))))
 
       val indegrees = star.aggregateNeighbors(
+        //the key word Some need to learn
         (vid, edge) => Some(1),
         (a: Int, b: Int) => a + b,
         EdgeDirection.In)
+
+      indegrees.collect().foreach{
+        case(id, value)=>
+          println(id + " " + value)
+      }
+
       assert(indegrees.collect().toSet === (1 to n).map(x => (x, 1)).toSet)
 
       val outdegrees = star.aggregateNeighbors(
@@ -56,6 +90,12 @@ class GraphSuite extends FunSuite with LocalSparkContext {
         (a: Int, b: Int) => a + b,
         EdgeDirection.Out)
       assert(outdegrees.collect().toSet === Set((0, n)))
+
+      outdegrees.collect().foreach{
+        case(id, value)=>
+          println(id + " " + value)
+      }
+
 
       val noVertexValues = star.aggregateNeighbors[Int](
         (vid: Vid, edge: EdgeTriplet[Int, Int]) => None,
