@@ -58,6 +58,10 @@ class GraphSuite extends FunSuite with LocalSparkContext {
     }
   }
 
+
+  /*
+
+   */
   test("joinVertices") {
     withSpark(new SparkContext("local", "test")) { sc =>
       val vertices = sc.parallelize(Seq[(Vid, String)]((1, "one"), (2, "two"), (3, "three")), 2)
