@@ -5,12 +5,19 @@ import org.scalatest.FunSuite
 import org.apache.spark.SparkContext
 import org.apache.spark.graph.LocalSparkContext._
 
-
+/*
+  GraphSuite is a class implement interface  LocalSparkContext and is a subclass of FunSuite
+ */
 class GraphSuite extends FunSuite with LocalSparkContext {
-
+  /*
+  set the property of the class ,to a certain degree,just like the global static variables
+   */
   System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
   System.setProperty("spark.kryo.registrator", "org.apache.spark.graph.GraphKryoRegistrator")
 
+  /*
+  this is a test unit,sc=> is a part of the specific grammar of test framework
+   */
   test("Graph Creation") {
     withSpark(new SparkContext("local", "test")) { sc =>
       val rawEdges = (0L to 100L).zip((1L to 99L) :+ 0L)
