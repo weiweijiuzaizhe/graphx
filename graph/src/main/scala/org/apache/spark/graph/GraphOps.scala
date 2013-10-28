@@ -47,11 +47,16 @@ class GraphOps[VD: ClassManifest, ED: ClassManifest](graph: Graph[VD, ED]) {
    * {{{
    * val graph: Graph[Int,Int] = loadGraph()
    * val averageFollowerAge: RDD[(Int, Int)] =
+   *       comment :[(Int,Double)] means a kind of template
+   *
+   *
    *   graph.aggregateNeighbors[(Int,Double)](
    *     (vid, edge) => (edge.otherVertex(vid).data, 1),
    *     (a, b) => (a._1 + b._1, a._2 + b._2),
    *     -1,
    *     EdgeDirection.In)
+   *
+   *             //end of function   averageFollowerAge
    *     .mapValues{ case (sum,followers) => sum.toDouble / followers}
    * }}}
    *
